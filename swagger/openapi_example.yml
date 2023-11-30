@@ -1,0 +1,244 @@
+openapi: 3.0.0
+
+info:
+  title: API сервиса Noname
+  version: '1.0'
+  description: |-
+    Это пример описания контрактов API сервиса Noname, предоставляемых через веб-сервис.
+    
+    Пример максимально приближен к реальности и показывает мой опыт разработки API в стиле REST API.
+    
+    Пример прошел успешную валидацию на [swagger.io](https://editor.swagger.io/) и на [yamllint.com](https://www.yamllint.com/).
+  contact:
+    email: okunev.evgeni@mail.ru  
+    name: "Евгений Окунев"
+    url: "https://www.linkedin.com/in/eokunev/"
+  license:
+    name: MIT
+    url: 'https://opensource.org/license/mit/'
+
+tags:
+  - name: inside
+    description: Внутренние методы
+  - name: public
+    description: Публичные методы
+
+servers:
+  - url: 'https://devportal.example/hr-services/api/v1'
+    description: DEV
+  - url: 'https://testportal.example/hr-services/api/v1'
+    description: TEST
+  - url: 'https://prodportal.example/hr-services/api/v1'
+    description: PROD
+
+paths:
+  '/inside/unit/{unit_uuid}/managers/':
+    parameters:
+      - $ref: '#/components/parameters/UnitUUID'
+    get:
+      summary: Получить список руководителей подразделения и его дочек по идентификатору подразделения
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitManagers'
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '418':
+          $ref: "#/components/responses/ItsTea"         
+      operationId: inside_unit_manager_retrieving
+      description: Получить список руководителей указанного подразделения и его дочек
+      tags:
+        - inside
+  
+  '/public/unit/{unit_uuid}/managers/':
+    parameters:
+      - $ref: '#/components/parameters/UnitUUID'
+    get:
+      summary: Получить список руководителей подразделения и его дочек по идентификатору подразделения
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitManagers'
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '418':
+          $ref: "#/components/responses/ItsTea"    
+      operationId: public_unit_managers_retrieving
+      description: Получить список руководителей указанного подразделения и его дочек
+      tags:
+        - public
+    delete:
+      summary: Удалить руководителей подразделения по идентификатору подразделения
+      responses:
+        '204':
+          description: "Руководители успешно удалены"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+      operationId: public_unit_manager_deleting
+      description: Удалить руководителей в подразделении
+      tags:
+        - public
+    post:
+      summary: Добавить руководителей в подразделение
+      requestBody:
+        $ref: '#/components/requestBodies/UnitManagersList'
+      responses:
+        '201':
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitManagers'
+        '403':
+          $ref: "#/components/responses/Forbidden"
+      tags:
+      - public
+    patch:
+      summary: Изменить список руководителей в подразделение
+      requestBody:
+        $ref: '#/components/requestBodies/UnitManagersList'
+      responses:
+        '202':
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitManagers'
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+      tags:
+      - public      
+
+components:
+  parameters:
+    UnitUUID:
+      schema:
+        type: string
+        format: uuid
+      name: unit_uuid
+      in: path
+      required: true
+      description: Идентификатор подразделения
+
+  requestBodies:
+    UnitManagersList:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnitManagersList'
+      required: true
+      
+  responses:
+    NotFound:
+      description: "Подразделение не найдено"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: "Подразделение не найдено"
+    ItsTea:
+      description: "Это чайник с бергамотом"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: "Это чайник с бергамотом"
+    Forbidden:
+      description: "Не достаточно прав на эту операцию"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: "Не достаточно прав на эту операцию"                
+        
+  
+  schemas:
+    UnitManagers:
+      title: UnitManagers
+      description: Список руководителей подразделения и его дочек
+      type: object
+      properties:
+        unit_uuid: 
+          type: string
+          format: uuid
+          description: Идентификатор подразделения
+          example: 7e6fa437-c9a3-48e1-90d8-aee2a6f006b0
+        managers: 
+          type: array
+          description: Список руководителей для данного подразделения и его дочек
+          items:
+            $ref: '#/components/schemas/Manager'
+      required:
+        - unit_uuid
+        - managers
+    
+    Manager:
+      title: Manager
+      description: Руководитель подразделения
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Идентификатор пользователя
+          example: aa903bf3-666c-4071-9b11-7ded0255495d
+        name:
+          type: string
+          description: Имя
+          example: Альберт
+        surname:
+          type: string
+          description: Фамилия
+          example: Эйнштейн
+        patronymic:
+          type: string
+          description: Отчество
+          example: null
+        position:
+          type: string
+          description: Название должности руководителя
+          example: Руководитель отдела качества
+      required:
+        - user_id
+        - surname
+        - name
+    
+    UnitManagersList:
+      title: UnitManagersList
+      description: Список руководителей подразделения
+      type: object
+      properties:
+        managers_uuids: 
+          type: array
+          description: Список руководителей для данного подразделения и его дочек
+          items:
+            type: string
+            format: uuid
+          example: ["aa903bf3-666c-4071-9b11-7ded0255495d", "aa903bf3-666c-4071-9b11-7ded0255495d"]
+            
+  securitySchemes:
+    Bearer:
+      name: Authorization
+      type: apiKey
+      in: header
+
+security:
+  - Bearer: []
