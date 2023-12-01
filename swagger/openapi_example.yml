@@ -99,6 +99,8 @@ paths:
                 $ref: '#/components/schemas/UnitManagers'
         '403':
           $ref: "#/components/responses/Forbidden"
+      operationId: public_unit_manager_creating
+      description: Добавить (создать) руководителей в подразделении
       tags:
       - public
     patch:
@@ -116,6 +118,8 @@ paths:
           $ref: "#/components/responses/NotFound"
         '403':
           $ref: "#/components/responses/Forbidden"
+      operationId: public_unit_manager_extending
+      description: Добавить новых руководителей в подразделении          
       tags:
       - public      
 
